@@ -10,6 +10,9 @@ import os
 
 
 
+
+
+
 class Ui_DarazScraper(object):
     def setupUi(self, DarazScraper):
 
@@ -31,7 +34,8 @@ class Ui_DarazScraper(object):
         self.pushButton.setGeometry(QtCore.QRect(154, 122, 191, 41))
         self.pushButton.setObjectName("pushButton")
 
-        self.pushButton.clicked.connect(self.execution(self.lineEdit.text()))
+        self.pushButton.clicked.connect(self.clicked(self.lineEdit.text()))
+
 
         self.retranslateUi(DarazScraper)
         QtCore.QMetaObject.connectSlotsByName(DarazScraper)
@@ -42,50 +46,52 @@ class Ui_DarazScraper(object):
         self.label.setText(_translate("DarazScraper", "Search Keyword"))
         self.pushButton.setText(_translate("DarazScraper", "Collect"))
 
-    def execution(self, keyword):
-        #wb = load_workbook(keyword + '.xlsx')
-
-        #ws = wb[keyword]
-        # ws = wb.create_sheet("vans")
-
-        # print(wb.sheetnames)
-        path = "G:/Project/Daraz-Scraper/chromedriver.exe"
-        driver = webdriver.Chrome(path)
-
-        fake_name_websites = driver.get("https://www.daraz.com.bd/")
-
-        searchbox = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@type='search']")))
-        searchbox.clear()
-
-        searchbox.send_keys(keyword)
-        searchbutton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'SEARCH')]"))).click()
-
-        links = []
-
-        condition = True
-        while condition:
-            products = driver.find_elements_by_xpath("//div[@class='c2iYAv']//div[@class='cRjKsc']//a")
-            for product in products:
-                links.append(product.get_attribute('href'))
-            try:
-                WebDriverWait(driver, 20).until(
-                    EC.element_to_be_clickable(
-                        (By.XPATH, "//ul[@class='ant-pagination ']//li[@class=' ant-pagination-next']//a"))).click()
-                time.sleep(2)
-            except:
-                condition = False
-        print(len(links))
-
-        for link in links:
-            driver.get(link)
-            time.sleep(1)
-            product_name = driver.find_element_by_xpath("//span[@class='pdp-mod-product-badge-title']").text
-            product_price = driver.find_element_by_xpath("//div[@class='pdp-product-price']//span").text
-            print(product_name + product_price)
+    def clicked(self,keyword):
+        execution(keyword)
 
 
 
-#         //ul[@class='ant-pagination ']//li[@class=' ant-pagination-next']
+def execution(keyword):
+    # wb = load_workbook(keyword + '.xlsx')
+
+    # ws = wb[keyword]
+    # ws = wb.create_sheet("vans")
+
+    # print(wb.sheetnames)
+    path = "G:/Project/Daraz-Scraper/chromedriver.exe"
+    driver = webdriver.Chrome(path)
+
+    fake_name_websites = driver.get("https://www.daraz.com.bd/")
+
+    searchbox = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@type='search']")))
+    searchbox.clear()
+
+    searchbox.send_keys(keyword)
+    searchbutton = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'SEARCH')]"))).click()
+
+    links = []
+
+    condition = True
+    while condition:
+        products = driver.find_elements_by_xpath("//div[@class='c2iYAv']//div[@class='cRjKsc']//a")
+        for product in products:
+            links.append(product.get_attribute('href'))
+        try:
+            WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//ul[@class='ant-pagination ']//li[@class=' ant-pagination-next']//a"))).click()
+            time.sleep(2)
+        except:
+            condition = False
+    print(len(links))
+
+    for link in links:
+        driver.get(link)
+        time.sleep(1)
+        product_name = driver.find_element_by_xpath("//span[@class='pdp-mod-product-badge-title']").text
+        product_price = driver.find_element_by_xpath("//div[@class='pdp-product-price']//span").text
+        print(product_name + product_price)
 
 
 
