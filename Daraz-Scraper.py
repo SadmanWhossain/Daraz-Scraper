@@ -1,5 +1,6 @@
+from PyQt5 import QtCore, QtGui, QtWidgets
 from selenium import webdriver
-from openpyxl import workbook, load_workbook
+#from openpyxl import workbook, load_workbook
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -7,10 +8,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 import time
 import os
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_DarazScraper(object):
     def setupUi(self, DarazScraper):
+
         DarazScraper.setObjectName("DarazScraper")
         DarazScraper.resize(500, 200)
         font = QtGui.QFont()
@@ -29,6 +31,8 @@ class Ui_DarazScraper(object):
         self.pushButton.setGeometry(QtCore.QRect(154, 122, 191, 41))
         self.pushButton.setObjectName("pushButton")
 
+        self.pushButton.clicked.connect(self.execution(self.lineEdit.text()))
+
         self.retranslateUi(DarazScraper)
         QtCore.QMetaObject.connectSlotsByName(DarazScraper)
 
@@ -38,11 +42,10 @@ class Ui_DarazScraper(object):
         self.label.setText(_translate("DarazScraper", "Search Keyword"))
         self.pushButton.setText(_translate("DarazScraper", "Collect"))
 
-class scraping:
     def execution(self, keyword):
-        wb = load_workbook(keyword + '.xlsx')
+        #wb = load_workbook(keyword + '.xlsx')
 
-        ws = wb[keyword]
+        #ws = wb[keyword]
         # ws = wb.create_sheet("vans")
 
         # print(wb.sheetnames)
@@ -53,17 +56,36 @@ class scraping:
 
         searchbox = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@type='search']")))
         searchbox.clear()
-        k = "sunglass"
-        searchbox.send_keys(k)
+
+        searchbox.send_keys(keyword)
         searchbutton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'SEARCH')]"))).click()
 
         links = []
 
-        products = driver.find_elements_by_xpath("//div[@data-tracking='product-card']//a")
-        for product in products:
-            links.append(product.get_property('href'))
+        condition = True
+        while condition:
+            products = driver.find_elements_by_xpath("//div[@class='c2iYAv']//div[@class='cRjKsc']//a")
+            for product in products:
+                links.append(product.get_attribute('href'))
+            try:
+                WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//ul[@class='ant-pagination ']//li[@class=' ant-pagination-next']//a"))).click()
+                time.sleep(2)
+            except:
+                condition = False
         print(len(links))
-        print(links)
+
+        for link in links:
+            driver.get(link)
+            time.sleep(1)
+            product_name = driver.find_element_by_xpath("//span[@class='pdp-mod-product-badge-title']").text
+            product_price = driver.find_element_by_xpath("//div[@class='pdp-product-price']//span").text
+            print(product_name + product_price)
+
+
+
+#         //ul[@class='ant-pagination ']//li[@class=' ant-pagination-next']
 
 
 
